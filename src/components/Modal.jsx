@@ -1,18 +1,10 @@
 import React from "react";
 import "./style/Modal.css";
 
-const Modal = ({ changeState, winner }) => {
+const Modal = ({ getToTheNextRoundModalHandler, winner }) => {
+    //
     const onClickHandler = () => {
-        changeState((prevState) => ({
-            ...prevState,
-            firstPlayerMoves: [],
-            secondPlayerMoves: [],
-            playersMoves: [],
-            playersMovesCount: 0,
-            prevPlayer: 2,
-            currentPlayer: 1,
-            winner: undefined,
-        }));
+        getToTheNextRoundModalHandler();
         // добавить в localStorage
         let currentGame = JSON.parse(localStorage.getItem("tictactoe-game"));
         localStorage.setItem(
@@ -29,6 +21,7 @@ const Modal = ({ changeState, winner }) => {
             })
         );
     };
+
     return (
         <div className="modal " data-id="modal">
             <div className="modal-contents">

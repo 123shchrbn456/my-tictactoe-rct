@@ -8,9 +8,12 @@ import Scoreboard from "./components/Scoreboard";
 
 import { defaultGameParameters } from "./utils";
 
+// В приложении я передаю компонентам в пропсы setState, так делать нельзя,
+// [] - Нужно создать handler функции на в текущем файле ,в них менять стейт и эти функции уже передавать компонентам
+
 function App() {
     const [state, setState] = useState(JSON.parse(localStorage.getItem("tictactoe-game")) || defaultGameParameters);
-
+    console.log(state);
     // Загрузка сайта
     useEffect(() => {
         let currentGame = JSON.parse(localStorage.getItem("tictactoe-game"));
@@ -30,6 +33,54 @@ function App() {
         // Шаг 2
         updateStatistics();
     }, [state.winner]);
+
+    // Passing to <Modal />
+    const getToTheNextRoundModalHandler = () => {
+        setState((prevState) => ({
+            ...prevState,
+            firstPlayerMoves: [],
+            secondPlayerMoves: [],
+            playersMoves: [],
+            playersMovesCount: 0,
+            prevPlayer: 2,
+            currentPlayer: 1,
+            winner: undefined,
+        }));
+    };
+
+    // Passing to <GameBoard> and then to <SingleSquare>
+    const changeCurrentPlayer = (currentPlayer) => {
+        if (currentPlayer === 1) setState((prevState) => ({ ...prevState, currentPlayer: 2, prevPlayer: 1 }));
+        if (currentPlayer === 2) setState((prevState) => ({ ...prevState, currentPlayer: 1, prevPlayer: 2 }));
+    };
+
+    // Passing to <GameBoard> and then to <SingleSquare>
+    const addPlayersMoves = (squareObj) => {
+        setState((prevState) => {
+            let stateCopy = structuredClone(prevState);
+            stateCopy.playersMoves.push(squareObj);
+            localStorage.setItem("tictactoe-game", JSON.stringify(stateCopy));
+            return stateCopy;
+        });
+    };
+
+    // Passing to <GameBoard> and then to <SingleSquare>
+    const addSinglePlayerMove = (currentPlayer, squareObj) => {
+        if (currentPlayer === 1) {
+            setState((prevState) => ({
+                ...prevState,
+                firstPlayerMoves: [...prevState.firstPlayerMoves, squareObj],
+            }));
+            return;
+        }
+        if (currentPlayer === 2) {
+            setState((prevState) => ({
+                ...prevState,
+                secondPlayerMoves: [...prevState.secondPlayerMoves, squareObj],
+            }));
+            return;
+        }
+    };
 
     const updateStatistics = () => {
         if (state.winner === "First player has won") {
@@ -98,6 +149,25 @@ function App() {
         }
     };
 
+    // Passing to <Menu>
+    const totalGameReset = (defaultGameParameters) => {
+        setState(defaultGameParameters);
+    };
+
+    // Passing to <Menu>
+    const startNewRound = () => {
+        setState((prevState) => ({
+            ...prevState,
+            firstPlayerMoves: [],
+            secondPlayerMoves: [],
+            playersMoves: [],
+            playersMovesCount: 0,
+            prevPlayer: 2,
+            currentPlayer: 1,
+            winner: undefined,
+        }));
+    };
+
     return (
         <>
             <main>
@@ -106,11 +176,14 @@ function App() {
                     <TurnIndicator currentPlayer={state.currentPlayer} />
 
                     {/* <!-- Dropdown menu --> */}
-                    <Menu changeState={setState} />
+                    {/* ПЕРЕДЕЛАТЬ! */}
+                    <Menu totalGameReset={totalGameReset} startNewRound={startNewRound} />
 
                     {/* <!-- Game board --> */}
                     <GameBoard
-                        changeState={setState}
+                        changeCurrentPlayer={changeCurrentPlayer}
+                        addPlayersMoves={addPlayersMoves}
+                        addSinglePlayerMove={addSinglePlayerMove}
                         currentPlayer={state.currentPlayer}
                         playersMoves={state.playersMoves}
                     />
@@ -119,7 +192,9 @@ function App() {
                     <Scoreboard gameStatistic={state.gameStatistic} />
                 </div>
             </main>
-            {state.winner && <Modal changeState={setState} winner={state.winner} />}
+            {state.winner && (
+                <Modal getToTheNextRoundModalHandler={getToTheNextRoundModalHandler} winner={state.winner} />
+            )}
         </>
     );
 }

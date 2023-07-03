@@ -2,11 +2,11 @@ import React, { useState } from "react";
 import "./style/Menu.css";
 import { defaultGameParameters } from "../utils";
 
-const Menu = ({ changeState }) => {
+const Menu = ({ totalGameReset, startNewRound }) => {
     const [menuOpen, setMenuOpen] = useState(false);
 
     const onResetClickHandler = () => {
-        changeState(defaultGameParameters);
+        totalGameReset(defaultGameParameters);
         localStorage.setItem("tictactoe-game", JSON.stringify(defaultGameParameters));
         setMenuOpen(false);
     };
@@ -14,16 +14,7 @@ const Menu = ({ changeState }) => {
     const onNewRoundClickHandler = () => {
         // закладка, не получается обнулить поставленные знаки
         // console.log("qqqqs");
-        changeState((prevState) => ({
-            ...prevState,
-            firstPlayerMoves: [],
-            secondPlayerMoves: [],
-            playersMoves: [],
-            playersMovesCount: 0,
-            prevPlayer: 2,
-            currentPlayer: 1,
-            winner: undefined,
-        }));
+        startNewRound();
         setMenuOpen(false);
     };
     return (
